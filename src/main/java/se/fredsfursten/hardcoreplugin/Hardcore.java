@@ -3,9 +3,12 @@ package se.fredsfursten.hardcoreplugin;
 import java.io.File;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.Set;
+import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
@@ -56,9 +59,8 @@ public class Hardcore {
 
 	public void playerDied(Player player)
 	{
-		LocalDateTime bannedUntil = LocalDateTime.now().plusHours(this.bannedFromWorldHours);
-		this.bannedPlayers.put(player, bannedUntil);
-		this.bannedUntilMessage.sendMessage(player, this.bannedFromWorldHours);
+		int hours = ban(player);
+		this.bannedUntilMessage.sendMessage(player, hours);
 		delayedSave();
 	}
 
@@ -68,8 +70,7 @@ public class Hardcore {
 		if (bannedUntil == null) return true;
 		long minutesLeft = LocalDateTime.now().until(bannedUntil, ChronoUnit.MINUTES);
 		if (minutesLeft < 0) {
-			this.bannedPlayers.remove(player);
-			delayedSave();
+			unban(player);
 			return true;
 		}
 		if (minutesLeft < 120) {
@@ -82,8 +83,21 @@ public class Hardcore {
 		return false;
 	}
 
+	public int ban(Player player) {
+		return ban(player, 0);
+	}
+
+	public int ban(Player player, int hours) {
+		if (hours <= 0) hours = this.bannedFromWorldHours;
+		LocalDateTime bannedUntil = LocalDateTime.now().plusHours(hours);
+		this.bannedPlayers.put(player, bannedUntil);
+		delayedSave();
+		return hours;
+	}
+
 	public void unban(Player player) {
 		this.bannedPlayers.remove(player);
+		delayedSave();
 	}
 
 	private void delayedSave() {
@@ -97,6 +111,7 @@ public class Hardcore {
 
 	void saveNow()
 	{
+		if (true) return;
 		try {
 			SavingAndLoadingBinary.save(this.bannedPlayers, this.storageFile);
 		} catch (Exception e) {
@@ -115,12 +130,26 @@ public class Hardcore {
 
 	void loadNow()
 	{
+		if (true) return;
 		if(!this.storageFile.exists()) return;
 		try {
 			this.bannedPlayers = SavingAndLoadingBinary.load(this.storageFile);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return;
+		}
+	}
+
+	public void info(CommandSender sender) {
+		Set<UUID> players = this.bannedPlayers.getPlayers();
+		if (players.size() == 0) {
+			sender.sendMessage("No players are banned from the hardcore world");
+			return;
+		}
+		for (UUID playerId : players) {
+			Player player = Bukkit.getPlayer(playerId);
+			LocalDateTime time = this.bannedPlayers.get(player);
+			sender.sendMessage(String.format("%s: %s", player.getName(), time.toString()));
 		}
 	}
 }

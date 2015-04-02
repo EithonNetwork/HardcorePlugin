@@ -25,11 +25,11 @@ public final class HardcorePlugin extends JavaPlugin implements Listener {
 		} else {
 			configuration.load();
 		}
+		ConfigurableFormat.enable(getPluginConfig());
 		getServer().getPluginManager().registerEvents(this, this);		
 		hardCoreWorldName = getConfig().getString("HardcoreWorldName");
 		Hardcore.get().enable(this);
 		Commands.get().enable(this);
-		ConfigurableFormat.enable(getPluginConfig());
 	}
 
 	@Override
@@ -46,8 +46,12 @@ public final class HardcorePlugin extends JavaPlugin implements Listener {
 		}
 
 		String command = args[0].toLowerCase();
-		if (command.equals("unban")) {
+		if (command.equals("ban")) {
+			Commands.get().banCommand(sender, args);
+		} else if (command.equals("unban")) {
 			Commands.get().unbanCommand(sender, args);
+		} else if (command.equals("info")) {
+			Commands.get().infoCommand(sender, args);
 		} else {
 			sender.sendMessage("Could not understand command.");
 			return false;
@@ -72,8 +76,8 @@ public final class HardcorePlugin extends JavaPlugin implements Listener {
 	}
 
 	private boolean isInHardcoreWorld(World world) {
-		if (hardCoreWorldName == null) return false;
-		if (hardCoreWorldName.isEmpty()) return false;
+		if (hardCoreWorldName == null) return true;
+		if (hardCoreWorldName.isEmpty()) return true;
 		return (world.getName() == hardCoreWorldName);
 	}
 
