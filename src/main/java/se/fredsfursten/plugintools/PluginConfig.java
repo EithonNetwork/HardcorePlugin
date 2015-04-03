@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -13,11 +14,13 @@ import org.bukkit.plugin.java.JavaPlugin;
 public class PluginConfig {
 	File configFile;
 	FileConfiguration config;
+	private int doDebugPrint;
 
 	public PluginConfig(JavaPlugin plugin, String fileName) {
 		this.configFile = initializeConfigFile(plugin, fileName);
 		this.config = new YamlConfiguration();
 		load();
+		this.doDebugPrint = this.config.getInt("DoDebugPrint");
 	}
 
 	private File initializeConfigFile(JavaPlugin plugin, String fileName) {
@@ -48,6 +51,16 @@ public class PluginConfig {
 	public FileConfiguration getFileConfiguration()
 	{
 		return this.config;
+	}
+
+	public void debugInfo(String format, Object... args) 
+	{
+		if (this.doDebugPrint == 0) return;
+		try {
+			Bukkit.getLogger().info(String.format(format, args));
+		} catch (Exception e) {
+			Bukkit.getLogger().warning(String.format("Wrong format? \"%s\", %d arguments: %s", format, args.length, e.getMessage()));
+		}
 	}
 
 	public void load()

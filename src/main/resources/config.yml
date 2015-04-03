@@ -5,9 +5,6 @@ HardcoreWorldName: W_Hardcore
 # The number of hours that a player is banned when he/she has died in the hardcore world
 BannedFromWorldHours: 1
 #
-# TakeCommand has 2 parameters: <player> (%s), <totalprice> (%f)
-TakeCommand: eco take %s %f
-#
 # BannedUntilMessage has 1 parameter: <banned for hours> (%d)
 BannedUntilMessage: Due to dying in the hardcore world, you have now been banned from this world for %d hours.
 #
@@ -16,3 +13,7 @@ StillBannedHoursMessage: Due to your earlier death in the hardcore world, you ar
 #
 # StillBannedMinutesMessage has 1 parameters: <minutes left> (%d)
 StillBannedMinutesMessage: Due to your earlier death in the hardcore world, you are banned for another %d minutes more.
+#
+# DoDebugPrint
+DoDebugPrint: 1
+

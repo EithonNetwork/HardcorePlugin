@@ -22,6 +22,7 @@ public class Hardcore {
 
 	private File storageFile;
 	private int bannedFromWorldHours;
+	private int doDebugPrint;
 	private ConfigurableFormat bannedUntilMessage;
 	private ConfigurableFormat stillBannedHoursMessage;
 	private ConfigurableFormat stillBannedMinutesMessage;
@@ -42,6 +43,7 @@ public class Hardcore {
 
 	void enable(JavaPlugin plugin){
 		this.plugin = plugin;
+		this.doDebugPrint = this.plugin.getConfig().getInt("DoDebugPrint");
 		this.bannedFromWorldHours = this.plugin.getConfig().getInt("BannedFromWorldHours");
 		this.bannedUntilMessage = new ConfigurableFormat("BannedUntilMessage", 1,
 				"Due to dying in the hardcore world, you have now been banned from this world for %d hours.");
@@ -67,6 +69,10 @@ public class Hardcore {
 	public boolean canPlayerTeleport(Player player, Location from, Location to)
 	{
 		long minutesLeft = minutesLeftOfBan(player);
+		if (minutesLeft <= 0) {
+			if (this.doDebugPrint > 0) Bukkit.getLogger().info(String.format("%s is allowed to teleport", player.getName()));
+			return true;
+		}
 		if (minutesLeft < 120) {
 			this.stillBannedMinutesMessage.sendMessage(player, minutesLeft);
 		} else {
@@ -74,6 +80,7 @@ public class Hardcore {
 			long restMinutes = minutesLeft - hoursLeft*60;
 			this.stillBannedHoursMessage.sendMessage(player, hoursLeft, restMinutes);
 		}
+		if (this.doDebugPrint > 0) Bukkit.getLogger().info(String.format("%s is not allowed to teleport", player.getName()));
 		return false;
 	}
 
@@ -90,21 +97,30 @@ public class Hardcore {
 	}
 
 	public boolean unban(Player player) {
-		if (!isBanned(player)) return false;
+		if (!isBanned(player)) {
+			if (this.doDebugPrint > 0) Bukkit.getLogger().info(String.format("isBanned(%s) == false", player.getName()));
+			return false;
+		}
+		if (this.doDebugPrint > 0) Bukkit.getLogger().info(String.format("Removing %s from bannedPlayers list.", player.getName()));
 		this.bannedPlayers.remove(player);
 		delayedSave();
 		return true;
 	}
-	
+
 	public boolean isBanned(Player player) {
-		return minutesLeftOfBan(player) == 0;
+		return minutesLeftOfBan(player) > 0;
 	}
-	
+
 	private long minutesLeftOfBan(Player player) {
 		LocalDateTime bannedUntil = this.bannedPlayers.get(player);
-		if (bannedUntil == null) return 0;
+		if (bannedUntil == null) {
+			if (this.doDebugPrint > 0) Bukkit.getLogger().info(String.format("%s is not in bannedPlayers list.", player.getName()));
+			return 0;
+		}
 		long minutesLeft = LocalDateTime.now().until(bannedUntil, ChronoUnit.MINUTES);
+		if (this.doDebugPrint > 0) Bukkit.getLogger().info(String.format("%s has %d minutes left.", player.getName(), minutesLeft));
 		if (minutesLeft <= 0) {
+			if (this.doDebugPrint > 0) Bukkit.getLogger().info(String.format("%s is removed from bannedPlayers list.", player.getName()));
 			this.bannedPlayers.remove(player);
 			delayedSave();
 			return 0;
@@ -158,8 +174,10 @@ public class Hardcore {
 		}
 		for (UUID playerId : players) {
 			Player player = Bukkit.getPlayer(playerId);
-			LocalDateTime time = this.bannedPlayers.get(player);
-			sender.sendMessage(String.format("%s: %s", player.getName(), time.toString()));
+			if (player != null) {
+				LocalDateTime time = this.bannedPlayers.get(playerId);
+				sender.sendMessage(String.format("%s: %s", player.getName(), time.toString()));
+			}
 		}
 	}
 }

@@ -1,6 +1,6 @@
 name: HardcorePlugin
 main: se.fredsfursten.hardcoreplugin.HardcorePlugin
-version: 0.1
+version: 1.0
 author: vanbrayne
 description: A Minecraft plugin for Eithon fixes
 commands:
