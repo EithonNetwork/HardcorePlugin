@@ -50,7 +50,7 @@ public class Hardcore {
 		this.stillBannedMinutesMessage = new ConfigurableFormat("StillBannedMinutesMessage", 1,
 				"Due to your earlier death in the hardcore world, you are banned for another %d minutes more.");
 		this.bannedPlayers = new PlayerCollection<LocalDateTime>();
-		this.storageFile = new File(this.plugin.getDataFolder(), "donations.bin");
+		this.storageFile = new File(this.plugin.getDataFolder(), "banned.bin");
 		delayedLoad();
 	}
 
@@ -64,15 +64,9 @@ public class Hardcore {
 		delayedSave();
 	}
 
-	public boolean playerTeleported(Player player, Location from, Location to)
+	public boolean canPlayerTeleport(Player player, Location from, Location to)
 	{
-		LocalDateTime bannedUntil = this.bannedPlayers.get(player);
-		if (bannedUntil == null) return true;
-		long minutesLeft = LocalDateTime.now().until(bannedUntil, ChronoUnit.MINUTES);
-		if (minutesLeft < 0) {
-			unban(player);
-			return true;
-		}
+		long minutesLeft = minutesLeftOfBan(player);
 		if (minutesLeft < 120) {
 			this.stillBannedMinutesMessage.sendMessage(player, minutesLeft);
 		} else {
@@ -95,9 +89,27 @@ public class Hardcore {
 		return hours;
 	}
 
-	public void unban(Player player) {
+	public boolean unban(Player player) {
+		if (!isBanned(player)) return false;
 		this.bannedPlayers.remove(player);
 		delayedSave();
+		return true;
+	}
+	
+	public boolean isBanned(Player player) {
+		return minutesLeftOfBan(player) == 0;
+	}
+	
+	private long minutesLeftOfBan(Player player) {
+		LocalDateTime bannedUntil = this.bannedPlayers.get(player);
+		if (bannedUntil == null) return 0;
+		long minutesLeft = LocalDateTime.now().until(bannedUntil, ChronoUnit.MINUTES);
+		if (minutesLeft <= 0) {
+			this.bannedPlayers.remove(player);
+			delayedSave();
+			return 0;
+		}
+		return minutesLeft;
 	}
 
 	private void delayedSave() {
@@ -111,7 +123,6 @@ public class Hardcore {
 
 	void saveNow()
 	{
-		if (true) return;
 		try {
 			SavingAndLoadingBinary.save(this.bannedPlayers, this.storageFile);
 		} catch (Exception e) {
@@ -130,7 +141,6 @@ public class Hardcore {
 
 	void loadNow()
 	{
-		if (true) return;
 		if(!this.storageFile.exists()) return;
 		try {
 			this.bannedPlayers = SavingAndLoadingBinary.load(this.storageFile);

@@ -1,5 +1,6 @@
 package se.fredsfursten.hardcoreplugin;
 
+import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -63,7 +64,7 @@ public final class HardcorePlugin extends JavaPlugin implements Listener {
 	public void onPlayerTeleportEvent(PlayerTeleportEvent event) {
 		if (event.isCancelled()) return;
 		if (!isInHardcoreWorld(event.getTo().getWorld())) return;
-		boolean canTeleport = Hardcore.get().playerTeleported(event.getPlayer(), event.getFrom(), event.getTo());
+		boolean canTeleport = Hardcore.get().canPlayerTeleport(event.getPlayer(), event.getFrom(), event.getTo());
 		if (canTeleport) return;
 		event.setCancelled(true);
 	}
@@ -76,8 +77,8 @@ public final class HardcorePlugin extends JavaPlugin implements Listener {
 	}
 
 	private boolean isInHardcoreWorld(World world) {
-		if (hardCoreWorldName == null) return true;
-		if (hardCoreWorldName.isEmpty()) return true;
+		if (hardCoreWorldName == null) return false;
+		if (hardCoreWorldName.isEmpty()) return false;
 		return (world.getName() == hardCoreWorldName);
 	}
 

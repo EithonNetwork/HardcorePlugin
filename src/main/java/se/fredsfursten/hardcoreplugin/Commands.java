@@ -40,13 +40,13 @@ public class Commands {
 			sender.sendMessage(BAN_COMMAND);
 			return;
 		}
-		
+
 		Player player = Misc.getPlayerFromString(args[1]);
 		if (player == null) {
 			sender.sendMessage(String.format("Unknown player: %s", args[1]));
 			return;
 		}
-		
+
 		int hours = 0;
 		if (args.length > 2) hours = Integer.parseInt(args[2]);
 
@@ -64,7 +64,7 @@ public class Commands {
 			sender.sendMessage(INFO_COMMAND);
 			return;
 		}
-		
+
 		Hardcore.get().info(sender);
 	}
 
@@ -77,15 +77,20 @@ public class Commands {
 			sender.sendMessage(UNBAN_COMMAND);
 			return;
 		}
-		
+
 		Player player = Misc.getPlayerFromString(args[1]);
 		if (player == null) {
 			sender.sendMessage(String.format("Unknown player: %s", args[1]));
 			return;
 		}
 
-		Hardcore.get().unban(player);
-		sender.sendMessage(String.format("Player %s has been unbanned from the hardcore world.", player.getName()));
+		boolean wasReallyUnbanned = Hardcore.get().unban(player);
+
+		if (wasReallyUnbanned) {
+			sender.sendMessage(String.format("Player %s has been unbanned from the hardcore world.", player.getName()));
+		} else {
+			sender.sendMessage(String.format("Player %s is not banned in the hardcore world.", player.getName()));
+		}
 	}
 
 
