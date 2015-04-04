@@ -6,7 +6,7 @@ description: A Minecraft plugin for Eithon fixes
 commands:
   hardcore:
     description: Handle special stuff for the hardcore world
-    usage: /hardcore ban | unban | info
+    usage: /hardcore ban | unban | list
     permission-message: You don't have <permission>
 permissions:
   hardcore.*:
@@ -14,13 +14,13 @@ permissions:
     default: op
     hardcore.ban: true
     hardcore.unban: true
-    hardcore.info: true
+    hardcore.list: true
   hardcore.ban:
     description: Access to /hardcore ban command
     default: op
   hardcore.unban:
     description: Access to /hardcore unban command
     default: op
-  hardcore.info:
+  hardcore.list:
     description: Access to /hardcore unban command
     default: op

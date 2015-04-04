@@ -53,8 +53,8 @@ public final class HardcorePlugin extends JavaPlugin implements Listener {
 			Commands.get().banCommand(sender, args);
 		} else if (command.equals("unban")) {
 			Commands.get().unbanCommand(sender, args);
-		} else if (command.equals("info")) {
-			Commands.get().infoCommand(sender, args);
+		} else if (command.equals("list")) {
+			Commands.get().listCommand(sender, args);
 		} else {
 			sender.sendMessage("Could not understand command.");
 			return false;

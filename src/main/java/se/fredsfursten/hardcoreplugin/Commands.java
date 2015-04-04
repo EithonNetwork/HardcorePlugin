@@ -10,7 +10,7 @@ public class Commands {
 	private static Commands singleton = null;
 	private static final String BAN_COMMAND = "/hardcore ban <player> [<hours>]";
 	private static final String UNBAN_COMMAND = "/hardcore unban <player>";
-	private static final String INFO_COMMAND = "/hardcore info";
+	private static final String LIST_COMMAND = "/hardcore list";
 
 	private JavaPlugin plugin = null;
 
@@ -56,16 +56,16 @@ public class Commands {
 	}
 
 
-	public void infoCommand(CommandSender sender, String[] args) {
+	public void listCommand(CommandSender sender, String[] args) {
 		if (sender instanceof Player) {
 			if (!verifyPermission((Player) sender, "hardcore.info")) return;
 		}
 		if (!arrayLengthIsWithinInterval(args, 1, 1)) {
-			sender.sendMessage(INFO_COMMAND);
+			sender.sendMessage(LIST_COMMAND);
 			return;
 		}
 
-		Hardcore.get().info(sender);
+		Hardcore.get().list(sender);
 	}
 
 	void unbanCommand(CommandSender sender, String[] args)

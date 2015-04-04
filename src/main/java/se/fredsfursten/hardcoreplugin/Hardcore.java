@@ -166,7 +166,7 @@ public class Hardcore {
 		}
 	}
 
-	public void info(CommandSender sender) {
+	public void list(CommandSender sender) {
 		Set<UUID> players = this.bannedPlayers.getPlayers();
 		if (players.size() == 0) {
 			sender.sendMessage("No players are banned from the hardcore world");
