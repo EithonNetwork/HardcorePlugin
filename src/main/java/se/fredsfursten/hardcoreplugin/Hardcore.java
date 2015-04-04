@@ -14,6 +14,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
 
 import se.fredsfursten.plugintools.ConfigurableFormat;
+import se.fredsfursten.plugintools.Misc;
 import se.fredsfursten.plugintools.PlayerCollection;
 import se.fredsfursten.plugintools.SavingAndLoadingBinary;
 
@@ -26,6 +27,7 @@ public class Hardcore {
 	private ConfigurableFormat bannedUntilMessage;
 	private ConfigurableFormat stillBannedHoursMessage;
 	private ConfigurableFormat stillBannedMinutesMessage;
+	private ConfigurableFormat spawnCommand;
 	private PlayerCollection<LocalDateTime> bannedPlayers;
 
 	private JavaPlugin plugin = null;
@@ -45,6 +47,7 @@ public class Hardcore {
 		this.plugin = plugin;
 		this.doDebugPrint = this.plugin.getConfig().getInt("DoDebugPrint");
 		this.bannedFromWorldHours = this.plugin.getConfig().getInt("BannedFromWorldHours");
+		this.spawnCommand = new ConfigurableFormat("TeleportToSpawnCommand", 1,"/spawn");
 		this.bannedUntilMessage = new ConfigurableFormat("BannedUntilMessage", 1,
 				"Due to dying in the hardcore world, you have now been banned from this world for %d hours.");
 		this.stillBannedHoursMessage = new ConfigurableFormat("StillBannedMinutesMessage", 2,
@@ -64,6 +67,7 @@ public class Hardcore {
 		int hours = ban(player);
 		this.bannedUntilMessage.sendMessage(player, hours);
 		delayedSave();
+		Misc.executeCommand(this.spawnCommand.getMessage());
 	}
 
 	public boolean canPlayerTeleport(Player player, Location from, Location to)
