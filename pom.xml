@@ -3,7 +3,7 @@
   <groupId>se.fredsfursten</groupId>
   <artifactId>HardcorePlugin</artifactId>
   <name>HardcorePlugin</name>
-   <version>1.1</version>
+   <version>1.2</version>
   <build>
       <plugins>
           <plugin>
@@ -31,5 +31,12 @@
            <type>jar</type>
            <scope>provided</scope>
        </dependency>
+       <dependency>
+            <groupId>se.fredsfursten.eithonlibraryplugin</groupId>
+            <artifactId>EithonLibraryPlugin</artifactId>
+            <version>1.0</version>
+            <scope>system</scope>
+            <systemPath>C:\Users\Lars\workspace\EithonLibraryPlugin.jar</systemPath>
+        </dependency>
    </dependencies>
 </project>

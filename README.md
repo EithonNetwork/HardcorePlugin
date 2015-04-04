@@ -4,6 +4,10 @@ A Hardcore plugin for Minecraft.
 
 ## Release history
 
+### 1.2 (2015-04-04)
+
+* NEW: Now uses EithonLibraryPlugin.
+
 ### 1.1 (2015-04-04)
 
 * CHANGE: List command now lists offline players too.
