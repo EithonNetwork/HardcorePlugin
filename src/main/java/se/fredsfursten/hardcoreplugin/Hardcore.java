@@ -28,7 +28,7 @@ public class Hardcore {
 	private ConfigurableFormat stillBannedHoursMessage;
 	private ConfigurableFormat stillBannedMinutesMessage;
 	private ConfigurableFormat spawnCommand;
-	private PlayerCollection<LocalDateTime> bannedPlayers;
+	private PlayerCollection<BannedPlayer> bannedPlayers;
 
 	private JavaPlugin plugin = null;
 
@@ -54,7 +54,7 @@ public class Hardcore {
 				"Due to your earlier death in the hardcore world, you are banned for another %d hours and %d minutes.");
 		this.stillBannedMinutesMessage = new ConfigurableFormat("StillBannedMinutesMessage", 1,
 				"Due to your earlier death in the hardcore world, you are banned for another %d minutes more.");
-		this.bannedPlayers = new PlayerCollection<LocalDateTime>();
+		this.bannedPlayers = new PlayerCollection<BannedPlayer>();
 		this.storageFile = new File(this.plugin.getDataFolder(), "banned.bin");
 		delayedLoad();
 	}
@@ -92,12 +92,11 @@ public class Hardcore {
 		return ban(player, 0);
 	}
 
-	public int ban(Player player, int hours) {
-		if (hours <= 0) hours = this.bannedFromWorldHours;
-		LocalDateTime bannedUntil = LocalDateTime.now().plusHours(hours);
-		this.bannedPlayers.put(player, bannedUntil);
+	public int ban(Player player, int bannedHours) {
+		if (bannedHours <= 0) bannedHours = this.bannedFromWorldHours;
+		this.bannedPlayers.put(player, new BannedPlayer(player, bannedHours));
 		delayedSave();
-		return hours;
+		return bannedHours;
 	}
 
 	public boolean unban(Player player) {
@@ -116,12 +115,12 @@ public class Hardcore {
 	}
 
 	private long minutesLeftOfBan(Player player) {
-		LocalDateTime bannedUntil = this.bannedPlayers.get(player);
-		if (bannedUntil == null) {
+		BannedPlayer bannedPlayer = this.bannedPlayers.get(player);
+		if (bannedPlayer == null) {
 			if (this.doDebugPrint > 0) Bukkit.getLogger().info(String.format("%s is not in bannedPlayers list.", player.getName()));
 			return 0;
 		}
-		long minutesLeft = LocalDateTime.now().until(bannedUntil, ChronoUnit.MINUTES);
+		long minutesLeft = bannedPlayer.getMinutesLeft();
 		if (this.doDebugPrint > 0) Bukkit.getLogger().info(String.format("%s has %d minutes left.", player.getName(), minutesLeft));
 		if (minutesLeft <= 0) {
 			if (this.doDebugPrint > 0) Bukkit.getLogger().info(String.format("%s is removed from bannedPlayers list.", player.getName()));
@@ -143,6 +142,7 @@ public class Hardcore {
 
 	void saveNow()
 	{
+		cleanUpBannedPlayers();
 		try {
 			SavingAndLoadingBinary.save(this.bannedPlayers, this.storageFile);
 		} catch (Exception e) {
@@ -168,20 +168,44 @@ public class Hardcore {
 			e.printStackTrace();
 			return;
 		}
+		cleanUpBannedPlayers();
 	}
 
 	public void list(CommandSender sender) {
+		cleanUpBannedPlayers();
 		Set<UUID> players = this.bannedPlayers.getPlayers();
 		if (players.size() == 0) {
 			sender.sendMessage("No players are banned from the hardcore world");
 			return;
 		}
 		for (UUID playerId : players) {
-			Player player = Bukkit.getPlayer(playerId);
-			if (player != null) {
-				LocalDateTime time = this.bannedPlayers.get(playerId);
-				sender.sendMessage(String.format("%s: %s", player.getName(), time.toString()));
-			}
+			BannedPlayer bannedPlayer = this.bannedPlayers.get(playerId);
+			printPlayerInfo(sender, bannedPlayer);
+		}
+	}
+
+	private void printPlayerInfo(CommandSender sender, BannedPlayer bannedPlayer)
+	{
+		long minutesLeft = bannedPlayer.getMinutesLeft();
+		if (minutesLeft <= 0) {
+			sender.sendMessage(String.format("%s is allowed to teleport to the hardcore world.", bannedPlayer.getName()));
+			return;
+		}
+		if (minutesLeft < 120) {
+			this.stillBannedMinutesMessage.sendMessage(sender, minutesLeft);
+		} else {
+			long hoursLeft = minutesLeft/60;
+			long restMinutes = minutesLeft - hoursLeft*60;
+			this.stillBannedHoursMessage.sendMessage(sender, hoursLeft, restMinutes);
+		}
+	}
+
+
+	private void cleanUpBannedPlayers() {
+		Set<UUID> players = this.bannedPlayers.getPlayers();
+		for (UUID playerId : players) {
+			BannedPlayer bannedPlayer = this.bannedPlayers.get(playerId);
+			if (bannedPlayer.getMinutesLeft() <= 1) this.bannedPlayers.remove(playerId);
 		}
 	}
 }
