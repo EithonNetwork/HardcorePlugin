@@ -9,6 +9,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -64,32 +65,44 @@ public final class HardcorePlugin extends JavaPlugin implements Listener {
 
 	@EventHandler
 	public void onPlayerTeleportEvent(PlayerTeleportEvent event) {
-		if (doDebugPrint > 0) Bukkit.getLogger().info("Enter onPlayerTeleportEvent()");
-		if (doDebugPrint > 0) Bukkit.getLogger().info("Return now if event was cancelled.");
+		debugInfo("Enter onPlayerTeleportEvent()");
+		debugInfo("Return now if event was cancelled.");
 		if (event.isCancelled()) return;
-		if (doDebugPrint > 0) Bukkit.getLogger().info("Return now if not in hardcore world.");
+		debugInfo("Return now if not in hardcore world.");
 		if (!isInHardcoreWorld(event.getTo().getWorld())) return;
-		if (doDebugPrint > 0) Bukkit.getLogger().info("Return if player can teleport.");
+		debugInfo("Return if player can teleport.");
 		boolean canTeleport = Hardcore.get().canPlayerTeleport(event.getPlayer(), event.getFrom(), event.getTo());
 		if (canTeleport) return;
-		if (doDebugPrint > 0) Bukkit.getLogger().info("Cancel this teleport event.");
+		debugInfo("Cancel this teleport event.");
 		event.setCancelled(true);
 	}
 
 	@EventHandler
 	public void onPlayerDeathEvent(PlayerDeathEvent event) {
-		if (doDebugPrint > 0) Bukkit.getLogger().info("Enter onPlayerDeathEvent()");
+		debugInfo("Enter onPlayerDeathEvent()");
 		Player player = event.getEntity();
-		if (doDebugPrint > 0) Bukkit.getLogger().info("Return now if not in hardcore world.");
+		debugInfo("Return now if not in hardcore world.");
 		if (!isInHardcoreWorld(player.getWorld())) return;
-		if (doDebugPrint > 0) Bukkit.getLogger().info("Ban this player.");
+		debugInfo("Ban this player.");
 		Hardcore.get().playerDied(player);
+	}
+
+	@EventHandler
+	public void onPlayerRespawnEvent(PlayerRespawnEvent event) {
+		debugInfo("Enter onPlayerRespawnEvent()");
+		Player player = event.getPlayer();
+		debugInfo("Return now if not in hardcore world.");
+		if (!isInHardcoreWorld(player.getWorld())) return;
+		debugInfo("Return if player is not banned.");
+		boolean isBanned = Hardcore.get().isBanned(event.getPlayer());
+		if (!isBanned) return;
+		Hardcore.get().gotoSpawnArea(player);
 	}
 
 	private boolean isInHardcoreWorld(World world) {
 		if (hardCoreWorldName == null) return false;
 		if (hardCoreWorldName.isEmpty()) return false;
-		if (doDebugPrint > 0) Bukkit.getLogger().info(String.format("World: \"%s\", hardcore=\"%s\".", world.getName(), hardCoreWorldName));
+		debugInfo(String.format("World: \"%s\", hardcore=\"%s\".", world.getName(), hardCoreWorldName));
 		return world.getName().equalsIgnoreCase(hardCoreWorldName);
 	}
 

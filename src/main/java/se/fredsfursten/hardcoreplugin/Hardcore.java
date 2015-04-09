@@ -30,7 +30,7 @@ public class Hardcore {
 	private ConfigurableFormat spawnCommand;
 	private PlayerCollection<BannedPlayer> bannedPlayers;
 
-	private JavaPlugin plugin = null;
+	private HardcorePlugin plugin = null;
 
 	private Hardcore() {
 	}
@@ -43,7 +43,7 @@ public class Hardcore {
 		return singleton;
 	}
 
-	void enable(JavaPlugin plugin){
+	void enable(HardcorePlugin plugin){
 		this.plugin = plugin;
 		this.doDebugPrint = this.plugin.getConfig().getInt("DoDebugPrint");
 		this.bannedFromWorldHours = this.plugin.getConfig().getInt("BannedFromWorldHours");
@@ -67,6 +67,9 @@ public class Hardcore {
 		int hours = ban(player);
 		this.bannedUntilMessage.sendMessage(player, hours);
 		delayedSave();
+	}
+	
+	public void gotoSpawnArea(Player player) {
 		Misc.executeCommand(this.spawnCommand.getMessage());
 	}
 

@@ -4,6 +4,10 @@ A Hardcore plugin for Minecraft.
 
 ## Release history
 
+### 1.2.1 (2015-04-09)
+
+* BUG: Player was still respawn in Hardcore world when killed. Will now be sent to spawn area.
+
 ### 1.2 (2015-04-04)
 
 * NEW: Now uses EithonLibraryPlugin.

@@ -18,5 +18,5 @@ StillBannedMinutesMessage: Due to your earlier death in the hardcore world, you 
 TeleportToSpawnCommand: /spawn
 #
 # DoDebugPrint
-DoDebugPrint: 1
+DoDebugPrint: 0
 
