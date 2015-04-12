@@ -1,8 +1,6 @@
 package se.fredsfursten.hardcoreplugin;
 
 import java.io.File;
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.Set;
 import java.util.UUID;
 
@@ -10,12 +8,14 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
+import org.json.simple.JSONObject;
 
 import se.fredsfursten.plugintools.ConfigurableFormat;
+import se.fredsfursten.plugintools.Json;
 import se.fredsfursten.plugintools.Misc;
 import se.fredsfursten.plugintools.PlayerCollection;
+import se.fredsfursten.plugintools.PluginConfig;
 import se.fredsfursten.plugintools.SavingAndLoadingBinary;
 
 public class Hardcore {
@@ -44,17 +44,17 @@ public class Hardcore {
 	}
 
 	void enable(HardcorePlugin plugin){
+		PluginConfig config = PluginConfig.get(plugin);
 		this.plugin = plugin;
-		this.doDebugPrint = this.plugin.getConfig().getInt("DoDebugPrint");
-		this.bannedFromWorldHours = this.plugin.getConfig().getInt("BannedFromWorldHours");
-		this.spawnCommand = new ConfigurableFormat("TeleportToSpawnCommand", 1,"/spawn");
-		this.bannedUntilMessage = new ConfigurableFormat("BannedUntilMessage", 1,
+		this.bannedFromWorldHours = config.getInt("BannedFromWorldHours", 72);
+		this.spawnCommand = new ConfigurableFormat(config, "TeleportToSpawnCommand", 1,"/spawn");
+		this.bannedUntilMessage = new ConfigurableFormat(config, "BannedUntilMessage", 1,
 				"Due to dying in the hardcore world, you have now been banned from this world for %d hours.");
-		this.stillBannedHoursMessage = new ConfigurableFormat("StillBannedMinutesMessage", 2,
+		this.stillBannedHoursMessage = new ConfigurableFormat(config, "StillBannedMinutesMessage", 2,
 				"Due to your earlier death in the hardcore world, you are banned for another %d hours and %d minutes.");
-		this.stillBannedMinutesMessage = new ConfigurableFormat("StillBannedMinutesMessage", 1,
+		this.stillBannedMinutesMessage = new ConfigurableFormat(config, "StillBannedMinutesMessage", 1,
 				"Due to your earlier death in the hardcore world, you are banned for another %d minutes more.");
-		this.bannedPlayers = new PlayerCollection<BannedPlayer>();
+		this.bannedPlayers = new PlayerCollection<BannedPlayer>(new BannedPlayer());
 		this.storageFile = new File(this.plugin.getDataFolder(), "banned.bin");
 		delayedLoad();
 	}
@@ -146,10 +146,22 @@ public class Hardcore {
 	void saveNow()
 	{
 		cleanUpBannedPlayers();
-		try {
-			SavingAndLoadingBinary.save(this.bannedPlayers, this.storageFile);
-		} catch (Exception e) {
-			e.printStackTrace();
+		
+		if (this.bannedPlayers == null) return;
+		File jsonFile = new File(this.plugin.getDataFolder(), "banned.json");
+		JSONObject json = Json.fromBody("bannedPlayers", 1, (Object) this.bannedPlayers.toJson());
+		Json.save(jsonFile, json);
+		
+		File binFile = this.storageFile;
+		if(binFile.exists()) {
+			// Verify that we can load the json file
+			JSONObject data = Json.load(jsonFile);
+			if (data == null) {
+				Misc.warning("Can't read the json file \"%s\", so we don't dare to remove the bin file \"%s\".",
+						jsonFile.getName(), binFile.getName());
+				return;
+			}
+			try { binFile.delete(); } catch (Exception ex) {}
 		}
 	}
 
@@ -164,14 +176,33 @@ public class Hardcore {
 
 	void loadNow()
 	{
-		if(!this.storageFile.exists()) return;
+		File file = this.storageFile;
+		if(!file.exists()) {
+			loadJson();
+			return;
+		}
 		try {
-			this.bannedPlayers = SavingAndLoadingBinary.load(this.storageFile);
+			this.bannedPlayers = SavingAndLoadingBinary.load(file);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return;
 		}
 		cleanUpBannedPlayers();
+	}
+
+	private void loadJson() {
+		File file = new File(this.plugin.getDataFolder(), "banned.json");
+		JSONObject data = Json.load(file);
+		if (data == null) {
+			Misc.debugInfo("The file was empty.");
+			return;			
+		}
+		JSONObject payload = (JSONObject)Json.toBodyPayload(data);
+		if (payload == null) {
+			Misc.warning("The banned players payload was empty.");
+			return;
+		}
+		this.bannedPlayers.fromJson(payload);
 	}
 
 	public void list(CommandSender sender) {

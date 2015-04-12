@@ -12,8 +12,6 @@ public class Commands {
 	private static final String UNBAN_COMMAND = "/hardcore unban <player>";
 	private static final String LIST_COMMAND = "/hardcore list";
 
-	private JavaPlugin plugin = null;
-
 	private Commands() {
 	}
 
@@ -26,7 +24,6 @@ public class Commands {
 	}
 
 	void enable(JavaPlugin plugin){
-		this.plugin = plugin;
 	}
 
 	void disable() {

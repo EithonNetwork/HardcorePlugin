@@ -4,6 +4,10 @@ A Hardcore plugin for Minecraft.
 
 ## Release history
 
+### 2.0 (2015-04-12)
+
+* NEW: Relase.
+
 ### 1.2.1 (2015-04-09)
 
 * BUG: Player was still respawn in Hardcore world when killed. Will now be sent to spawn area.
