@@ -4,6 +4,10 @@ A Hardcore plugin for Minecraft.
 
 ## Release history
 
+### 2.0.1 (2015-04-13)
+
+* BUG: Missing dependency in config.yml.
+
 ### 2.0 (2015-04-12)
 
 * NEW: Relase.

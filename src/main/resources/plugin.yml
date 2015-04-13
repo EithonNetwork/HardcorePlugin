@@ -1,8 +1,9 @@
 name: HardcorePlugin
 main: se.fredsfursten.hardcoreplugin.HardcorePlugin
-version: 2.0
+version: 2.0.1
 author: vanbrayne
 description: A Minecraft plugin for Eithon fixes
+depend: [EithonLibraryPlugin]
 commands:
   hardcore:
     description: Handle special stuff for the hardcore world

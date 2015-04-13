@@ -19,8 +19,8 @@ public final class HardcorePlugin extends JavaPlugin implements Listener {
 
 	@Override
 	public void onEnable() {
-		Misc.enable(this);
 		PluginConfig config = PluginConfig.get(this);
+		Misc.enable(this);
 		getServer().getPluginManager().registerEvents(this, this);		
 		hardCoreWorldName = config.getString("HardcoreWorldName", "");	
 		Hardcore.get().enable(this);
